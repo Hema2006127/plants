@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class OnBoardingScreen extends StatefulWidget {
   @override
@@ -95,7 +97,11 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                         ),
                       ),
                     ),
-                    onPressed: () {
+                    onPressed: () async {
+                      SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+                      await prefs.setBool('seen', true);
+
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (_) => HomeScreen()),
@@ -153,8 +159,12 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                onPressed: () {
+                onPressed: () async {
                   if (currentPage == pages.length - 1) {
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    await prefs.setBool('seen', true);
+
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (_) => HomeScreen()),

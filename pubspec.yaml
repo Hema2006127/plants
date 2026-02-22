@@ -90,8 +90,8 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
 flutter_native_splash:
-  image: assets/figma.png
+  image: assets/splashscreen.png
   color: "#ffffff"
   android_12:
-    image: assets/figma.png
+    image: splashscreen/figma.png
     color: "#ffffff"
