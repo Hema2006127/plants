@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:plantpulse/forgetPassword.dart';
+import 'package:plantpulse/sendOTP.dart';
+import 'register.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'onboarding.dart';
-
-void main() async{
+import 'login.dart';
+import 'changePassword.dart';
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -10,34 +14,31 @@ void main() async{
 
   runApp(MyApp(seen: seen));
 }
+
 class MyApp extends StatelessWidget {
   final bool seen;
-  static var width;
-  static var height;
 
   const MyApp({super.key, required this.seen});
 
   @override
   Widget build(BuildContext context) {
-    width = MediaQuery.of(context).size.width;
-    height = MediaQuery.of(context).size.height;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: seen ?  HomeScreen() :  OnBoardingScreen(),
-    );
-  }
-}
-class HomeScreen extends StatelessWidget {
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text(
-          "Home Screen",
-          style: TextStyle(fontSize: 100),
-        ),
+      theme: ThemeData(
+        fontFamily: 'Poppins',
+        useMaterial3: true,
       ),
+
+      initialRoute: seen ? 'Login' :  'OnBoardingScreen', //دي عشان تظهر مرة واحدة بس سطر مهم ممنوع المسح
+      routes: {
+        'Login': (context) => Login(),
+        'OnBoardingScreen': (context) => OnBoardingScreen(),
+        'Register': (context) => Register(),
+        'Forget_Password' : (context) => ForgetPassword(),
+        'Send_OTP': (context) => SendOTP(),
+        'Change_Password': (context) => ChangePassword(),
+      },
     );
   }
 }
+
