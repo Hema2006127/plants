@@ -42,9 +42,9 @@ class _ScanState extends State<Scan> {
                 'Scan Your Plant!',
                 style: TextStyle(
                   fontSize: 20,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700,
                   fontFamily: 'Poppins',
-                  color: Colors.black,
+                  color: Color(0XFF1F1F1F),
                 ),
               ),
               const SizedBox(height: 8),
@@ -52,8 +52,9 @@ class _ScanState extends State<Scan> {
                 'Start Scan or upload a plant image to detect\nany disease instantly.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey,
+                  fontSize: 14,
+                  color: Color(0XFF4A4A4A),
+                  fontWeight: FontWeight.w400,
                   fontFamily: 'Poppins',
                   height: 1.5,
                 ),
@@ -70,16 +71,13 @@ class _ScanState extends State<Scan> {
                     child: Stack(
                       children: [
                         Center(
-                          child: Icon(
-                            Icons.local_florist,
-                            size: 140,
-                            color: Colors.green.shade400,
+                          child: Image.asset(
+                            "assets/lettuce.png",
+                            height: 161,
+                            width: 151,
                           ),
                         ),
-                        _corner(top: 0, left: 0, flipX: false, flipY: false),
-                        _corner(top: 0, right: 0, flipX: true, flipY: false),
-                        _corner(bottom: 0, left: 0, flipX: false, flipY: true),
-                        _corner(bottom: 0, right: 0, flipX: true, flipY: true),
+                        Center(child: Image.asset("assets/border.png")),
                       ],
                     ),
                   ),
@@ -87,30 +85,39 @@ class _ScanState extends State<Scan> {
               ),
 
               const SizedBox(height: 48),
-
-              // Buttons
               Column(
                 children: [
                   SizedBox(
                     width: double.infinity,
                     height: 52,
-                    child: ElevatedButton.icon(
+                    child: ElevatedButton(
                       onPressed: () => _pickImage(ImageSource.camera),
-                      icon: const Icon(Icons.qr_code_scanner, color: Colors.white, size: 20),
-                      label: const Text(
-                        'Start Scan',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Poppins',
-                          color: Colors.white,
-                        ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Start Scan',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: 'Poppins',
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Image.asset(
+                            "assets/qrcode.png",
+                            height: 24,
+                            width: 24,
+                          ),
+                        ],
                       ),
+
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2E7D32),
+                        backgroundColor: const Color(0XFF399B25),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),
@@ -119,22 +126,36 @@ class _ScanState extends State<Scan> {
                   SizedBox(
                     width: double.infinity,
                     height: 52,
-                    child: OutlinedButton.icon(
+                    child: ElevatedButton(
                       onPressed: () => _pickImage(ImageSource.gallery),
-                      icon: const Icon(Icons.image_outlined, color: Color(0xFF2E7D32), size: 20),
-                      label: const Text(
-                        'Upload From Gallery',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Poppins',
-                          color: Color(0xFF2E7D32),
-                        ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Upload From Gallery',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: 'Poppins',
+                              color: Color(0xFF399B25),
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Icon(
+                            Icons.image,
+                            size: 24,
+                            color: Color(0xFF399B25),
+                          ),
+                        ],
                       ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF2E7D32), width: 1.5),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0XFFFFFFFF),
+                        side: const BorderSide(
+                          color: Color(0xFF399B25),
+                          width: 0.6,
+                        ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),
@@ -142,7 +163,7 @@ class _ScanState extends State<Scan> {
                 ],
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -150,9 +171,19 @@ class _ScanState extends State<Scan> {
     );
   }
 
-  Widget _corner({double? top, double? bottom, double? left, double? right, required bool flipX, required bool flipY}) {
+  Widget _corner({
+    double? top,
+    double? bottom,
+    double? left,
+    double? right,
+    required bool flipX,
+    required bool flipY,
+  }) {
     return Positioned(
-      top: top, bottom: bottom, left: left, right: right,
+      top: top,
+      bottom: bottom,
+      left: left,
+      right: right,
       child: Transform.scale(
         scaleX: flipX ? -1 : 1,
         scaleY: flipY ? -1 : 1,
