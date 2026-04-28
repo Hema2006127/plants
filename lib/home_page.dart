@@ -5,7 +5,16 @@ import 'profile.dart';
 import 'scan.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final String firstName;
+  final String fullName;
+  final String gender;
+
+  const HomePage({
+    super.key,
+    required this.firstName,
+    required this.fullName,
+    required this.gender,
+  });
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -13,10 +22,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
-  String _firstName = '';
-  String _fullName = '';
-  String _gender = '';
-  bool _initialized = false;
+  late String _firstName;
+  late String _fullName;
+  late String _gender;
   late List<Widget> _pages;
 
   static const _navItems = [
@@ -27,16 +35,14 @@ class _HomePageState extends State<HomePage> {
   ];
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_initialized) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map?;
-      _firstName = args?['firstName'] ?? '';
-      _fullName = args?['fullName'] ?? '';
-      _gender = (args?['gender'] ?? 'female').toString();
-      _initialized = true;
-      _pages = _buildPages();
-    }
+  void initState() {
+    super.initState();
+
+    _firstName = widget.firstName;
+    _fullName = widget.fullName;
+    _gender = widget.gender;
+
+    _pages = _buildPages();
   }
 
   List<Widget> _buildPages() {
@@ -55,6 +61,8 @@ class _HomePageState extends State<HomePage> {
           setState(() {
             _firstName = newName.split(' ')[0];
             _fullName = newName;
+
+            // تحديث الصفحة الرئيسية بعد تغيير الاسم
             _pages[0] = HomePageContent(
               firstName: _firstName,
               gender: _gender,
@@ -69,7 +77,10 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: Color(0xFFEBF5E9),
@@ -101,7 +112,7 @@ class _HomePageState extends State<HomePage> {
             ),
             items: List.generate(
               _navItems.length,
-              (index) => BottomNavigationBarItem(
+                  (index) => BottomNavigationBarItem(
                 icon: ColorFiltered(
                   colorFilter: ColorFilter.mode(
                     _currentIndex == index

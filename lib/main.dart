@@ -26,9 +26,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Poppins', useMaterial3: true),
-
       home: const _StartupScreen(),
-
       routes: {
         'Login': (_) => const Login(),
         'Change_Password': (_) => const ChangePassword(),
@@ -39,24 +37,85 @@ class MyApp extends StatelessWidget {
         'ScanPage': (_) => const Scan(),
         'RecentScan': (_) => const RecentScan(),
 
-        // ⚠️ مهم: هنا التعديل الوحيد المطلوب
+        // ✅ HomePage بعد التعديل (بياخد parameters)
         'HomePage': (context) {
           final args = ModalRoute.of(context)!.settings.arguments
           as Map<String, dynamic>?;
 
           return HomePage(
             firstName: args?['firstName'] ?? '',
-            gender: args?['gender'] ?? '',
+            fullName: args?['fullName'] ?? '',
+            gender: args?['gender'] ?? userState.gender,
           );
         },
 
-        'ResultPage': (_) => ResultPage(
-          imagePath: '',
-          plantName: 'Lettuce',
-          status: 'Healthy',
-          confidence: '—',
-        ),
+        // ✅ ResultPage بعد التعديل (بياخد accuracy الحقيقي)
+        'ResultPage': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments
+          as Map<String, dynamic>?;
+
+          return ResultPage(
+            imagePath: args?['imagePath'] ?? '',
+            plantName: args?['plantName'] ?? '',
+            status: args?['status'] ?? '',
+            confidence: args?['confidence'] ?? '',
+          );
+        },
       },
     );
+  }
+}
+
+class _StartupScreen extends StatefulWidget {
+  const _StartupScreen();
+
+  @override
+  State<_StartupScreen> createState() => _StartupScreenState();
+}
+
+class _StartupScreenState extends State<_StartupScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _navigate();
+  }
+
+  Future<void> _navigate() async {
+    await loadScans();
+    final prefs = await SharedPreferences.getInstance();
+    final seen = prefs.getBool('seen') ?? false;
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+    if (!mounted) return;
+
+    if (!seen) {
+      Navigator.pushReplacementNamed(context, 'OnBoardingScreen');
+      return;
+    }
+
+    if (isLoggedIn) {
+      await userState.loadPersistedData();
+      if (!mounted) return;
+
+      Navigator.pushReplacementNamed(
+        context,
+        'HomePage',
+        arguments: {
+          'firstName': userState.fullName.isNotEmpty
+              ? userState.fullName.split(' ')[0]
+              : '',
+          'fullName': userState.fullName,
+          'gender': userState.gender,
+        },
+      );
+      return;
+    }
+
+    Navigator.pushReplacementNamed(context, 'Login');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(backgroundColor: Colors.white);
   }
 }

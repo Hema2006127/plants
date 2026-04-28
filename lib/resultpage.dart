@@ -25,9 +25,19 @@ class ResultPage extends StatefulWidget {
 }
 
 class _ResultPageState extends State<ResultPage> {
-  late final Future<bool> _imageExistsFuture = File(widget.imagePath).exists();
+  late final Future<bool> _imageExistsFuture =
+  File(widget.imagePath).exists();
 
   bool get isHealthy => widget.status == 'Healthy';
+
+  String get safeConfidence {
+    if (widget.confidence.isEmpty ||
+        widget.confidence == '—' ||
+        widget.confidence == 'null') {
+      return '0';
+    }
+    return widget.confidence;
+  }
 
   void _handleBack() {
     if (widget.fromRecentScan) {
@@ -46,9 +56,11 @@ class _ResultPageState extends State<ResultPage> {
       );
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) {
@@ -81,213 +93,6 @@ class _ResultPageState extends State<ResultPage> {
     );
   }
 
-  Widget _buildAppBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: _handleBack,
-            child: const Icon(
-              Icons.arrow_back_ios,
-              size: 24,
-              color: Color(0XFF4A4A4A),
-            ),
-          ),
-          const Expanded(
-            child: Text(
-              'Result Page',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                fontFamily: 'Poppins',
-                color: Color(0xFF1F1F1F),
-              ),
-            ),
-          ),
-          const SizedBox(width: 24),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImage(Size size) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: widget.imageUrl != null && widget.imageUrl!.isNotEmpty
-            ? Image.network(
-                widget.imageUrl!,
-                width: double.infinity,
-                height: size.height * 0.25,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  height: size.height * 0.25,
-                  color: const Color(0xFFD9D9D9),
-                  child: const Icon(
-                    Icons.image_not_supported,
-                    size: 60,
-                    color: Colors.grey,
-                  ),
-                ),
-              )
-            : FutureBuilder<bool>(
-                future: _imageExistsFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const SizedBox(
-                      height: 200,
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  if (snapshot.data == true) {
-                    return Image.file(
-                      File(widget.imagePath),
-                      width: double.infinity,
-                      height: size.height * 0.25,
-                      fit: BoxFit.cover,
-                    );
-                  }
-                  return Container(
-                    width: double.infinity,
-                    height: size.height * 0.25,
-                    color: const Color(0xFFD9D9D9),
-                    child: const Icon(
-                      Icons.image_not_supported,
-                      size: 60,
-                      color: Colors.grey,
-                    ),
-                  );
-                },
-              ),
-      ),
-    );
-  }
-
-  Widget _buildNameAndBadge() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            widget.plantName,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              fontFamily: 'Poppins',
-              color: Color(0xFF000000),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: isHealthy
-                  ? const Color(0xFFEBF5E9)
-                  : const Color(0xFFFBEAEA),
-              borderRadius: BorderRadius.circular(63),
-              border: Border.all(
-                color: isHealthy
-                    ? const Color(0xFFA4D19B)
-                    : const Color(0xFFEB9F9F),
-                width: 0.4,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isHealthy ? Icons.check_circle_outline : Icons.error_outline,
-                  size: 13,
-                  color: isHealthy
-                      ? const Color(0xFF399B25)
-                      : const Color(0xFFD32F2F),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  isHealthy ? 'Healthy Condition' : 'Issue Detected',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    fontFamily: 'Poppins',
-                    color: isHealthy
-                        ? const Color(0xFF399B25)
-                        : const Color(0xFFD32F2F),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMessageCard() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isHealthy ? const Color(0xFFEBF5E9) : const Color(0xFFFBEAEA),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isHealthy
-                ? const Color(0xFFA4D19B)
-                : const Color(0xFFEB9F9F),
-            width: 0.4,
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  isHealthy ? Icons.check_circle_outline : Icons.error_outline,
-                  color: isHealthy
-                      ? const Color(0xFF399B25)
-                      : const Color(0xFFD32F2F),
-                  size: 24,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  isHealthy
-                      ? 'Your plant is healthy and thriving!'
-                      : 'Detected Disease',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Poppins',
-                    color: Color(0xFF4A4A4A),
-                  ),
-                ),
-              ],
-            ),
-            if (!isHealthy) ...[
-              const SizedBox(height: 4),
-              const Padding(
-                padding: EdgeInsets.only(left: 28),
-                child: Text(
-                  'Disease Detected',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    fontFamily: 'Poppins',
-                    color: Color(0xFFD32F2F),
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildAccuracyRow() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -297,17 +102,14 @@ class _ResultPageState extends State<ResultPage> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0XFFFFFFFF),
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: const Color(0xFFA4D19B), width: 0.4),
               ),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.check_circle_outline,
-                    color: Color(0xFF399B25),
-                    size: 24,
-                  ),
+                  const Icon(Icons.check_circle_outline,
+                      color: Color(0xFF399B25), size: 24),
                   const SizedBox(width: 8),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,15 +120,13 @@ class _ResultPageState extends State<ResultPage> {
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           fontFamily: 'Poppins',
-                          color: Color(0xFF1F1F1F),
                         ),
                       ),
                       Text(
-                        widget.confidence,
+                        '${safeConfidence}',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          fontFamily: 'Poppins',
                           color: Color(0xFF399B25),
                         ),
                       ),
@@ -347,11 +147,8 @@ class _ResultPageState extends State<ResultPage> {
               ),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.error_outline,
-                    color: Color(0xFFFF8C27),
-                    size: 24,
-                  ),
+                  const Icon(Icons.error_outline,
+                      color: Color(0xFFFF8C27), size: 24),
                   const SizedBox(width: 8),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -361,16 +158,12 @@ class _ResultPageState extends State<ResultPage> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          fontFamily: 'Poppins',
-                          color: Color(0xFF1F1F1F),
                         ),
                       ),
                       Text(
                         isHealthy ? 'Good' : 'Low',
                         style: const TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: 'Poppins',
                           color: Color(0xFFFF8C27),
                         ),
                       ),
@@ -381,83 +174,6 @@ class _ResultPageState extends State<ResultPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildCareTips() {
-    final tips = isHealthy
-        ? [
-            'Use clean, fresh water',
-            'Maintain proper temperature',
-            'Provide balanced lighting',
-            'Ensure good air circulation',
-          ]
-        : [
-            'Change the water immediately',
-            'Adjust nutrient solution',
-            'Avoid excessive light',
-            'Remove affected leaves',
-          ];
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEBF5E9),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFA4D19B), width: 0.4),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Image.asset('assets/lamp.png', width: 24, height: 24),
-                const SizedBox(width: 8),
-                Text(
-                  isHealthy
-                      ? 'Care Tips for Ongoing Health'
-                      : 'Recommended Treatment Steps',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Poppins',
-                    color: Color(0xFF1F1F1F),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            ...tips.map(
-              (tip) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      '• ',
-                      style: TextStyle(color: Color(0xFF1F1F1F), fontSize: 10),
-                    ),
-                    Expanded(
-                      child: Text(
-                        tip,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w400,
-                          color: Color(0xFF1F1F1F),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

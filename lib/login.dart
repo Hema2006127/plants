@@ -57,28 +57,6 @@ class _LoginState extends State<Login> {
     try {
       await userState.loadPersistedData();
 
-      final savedEmail = userState.email;
-      final savedPassword = userState.password;
-
-      if (savedEmail == email &&
-          savedPassword == password &&
-          savedPassword.isNotEmpty) {
-        if (!mounted) return;
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          'HomePage',
-          (route) => false,
-          arguments: {
-            'firstName': userState.fullName.isNotEmpty
-                ? userState.fullName.split(' ')[0]
-                : '',
-            'fullName': userState.fullName,
-            'email': email,
-            'password': password,
-          },
-        );
-        return;
-      }
-
       final dio = Dio();
       final response = await dio.post(
         _signinUrl,
@@ -90,7 +68,6 @@ class _LoginState extends State<Login> {
       );
 
       final token = response.data['token'] as String?;
-
       if (token == null || token.isEmpty) {
         _showError('Login failed. Please try again.');
         return;
@@ -98,36 +75,49 @@ class _LoginState extends State<Login> {
 
       await userState.saveToken(token);
 
+      String fullName = '';
+      String gender = 'male';
+
       try {
         final profileRes = await dio.get(
           'https://plant-pules-api.vercel.app/api/v1/users/profile',
           options: Options(headers: {'token': token}),
         );
-        final name = profileRes.data['data']['name'] as String? ?? '';
+
+        fullName = profileRes.data['data']['name'] as String? ?? '';
+
         final prefs = await SharedPreferences.getInstance();
-        final savedGender = prefs.getString('savedGender') ?? 'male';
-        userState.saveUserData(
-          email: email,
-          password: password,
-          fullName: name,
-          gender: savedGender,
-        );
-        await loadScansFromApi(token);
+        gender = prefs.getString('gender') ?? 'male';
       } catch (_) {
-        userState.saveUserData(email: email, password: password, fullName: '');
+        fullName = '';
       }
+
+      // Save user data locally
+      await userState.saveUserData(
+        email: email,
+        password: password,
+        fullName: fullName,
+        gender: gender,
+      );
+
+      // Mark logged in
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      await prefs.setString('gender', gender);
+
+      await loadScansFromApi(token);
+
       if (!mounted) return;
 
       Navigator.of(context).pushNamedAndRemoveUntil(
         'HomePage',
-        (route) => false,
+            (route) => false,
         arguments: {
-          'firstName': userState.fullName.isNotEmpty
-              ? userState.fullName.split(' ')[0]
-              : '',
-          'fullName': userState.fullName,
+          'firstName': fullName.isNotEmpty ? fullName.split(' ')[0] : '',
+          'fullName': fullName,
           'email': email,
           'password': password,
+          'gender': gender,
         },
       );
     } on DioException catch (e) {
@@ -166,11 +156,10 @@ class _LoginState extends State<Login> {
         key: _formKey,
         child: ListView(
           padding: EdgeInsets.zero,
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          physics: const BouncingScrollPhysics(),
           children: [
             const UpGreenPlantPulse(),
-            SizedBox(height: size.height * 0.0355),
+            SizedBox(height: size.height * 0.035),
+
             Padding(
               padding: EdgeInsets.symmetric(horizontal: size.width * 0.064),
               child: Column(
@@ -183,7 +172,9 @@ class _LoginState extends State<Login> {
                     hintText: 'Enter Your Email',
                     validator: _validateEmail,
                   ),
-                  SizedBox(height: size.height * 0.019),
+
+                  SizedBox(height: size.height * 0.02),
+
                   Textfield(
                     controller: _passwordController,
                     keyboardType: TextInputType.visiblePassword,
@@ -192,49 +183,53 @@ class _LoginState extends State<Login> {
                     isPassword: true,
                     validator: _validatePassword,
                   ),
-                  SizedBox(height: size.height * 0.0099),
+
+                  SizedBox(height: size.height * 0.01),
+
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () =>
                           Navigator.of(context).pushNamed('Forget_Password'),
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
                       child: const Text(
                         'Forgot Password?',
                         style: TextStyle(
-                          fontWeight: FontWeight.w400,
-                          fontFamily: 'Poppins',
-                          fontSize: 12,
                           color: Color(0xFF399B25),
+                          fontFamily: 'Poppins',
                         ),
                       ),
                     ),
                   ),
-                  SizedBox(height: size.height * 0.0394),
+
+                  SizedBox(height: size.height * 0.04),
+
                   _isLoading
                       ? const Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF399B25),
-                          ),
-                        )
-                      : GreenButton(text: 'Log in', onPress: _handleLogin),
-                  SizedBox(height: size.height * 0.0394),
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF399B25),
+                    ),
+                  )
+                      : GreenButton(
+                    text: 'Log in',
+                    onPress: _handleLogin,
+                  ),
+
+                  SizedBox(height: size.height * 0.04),
+
                   LoginWithFaceBook(
                     onEmailSelected: (email) {
                       _emailController.text = email;
                     },
                   ),
+
                   SizedBox(height: size.height * 0.1),
+
                   DownText(
                     label: "Don't have an account?",
                     actionText: 'Register',
-                    onTap: () => Navigator.of(context).pushNamed('Register'),
+                    onTap: () =>
+                        Navigator.of(context).pushNamed('Register'),
                   ),
-                  SizedBox(height: size.height * 0.03),
                 ],
               ),
             ),
