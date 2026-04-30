@@ -70,18 +70,13 @@ class _HomePageContentState extends State<HomePageContent> {
         options: Options(headers: {'token': userState.token}),
       );
 
-      final List data = response.data['data'];
-
-      scansState.scans.clear();
-
-      for (var item in data) {
-        scansState.scans.add(ScanRecord.fromJson(item));
-      }
-
-      scansState.notifyListeners();
-    } catch (e) {
-      print('Error: $e');
-    }
+      final List data = response.data['data'] ?? [];
+      final records = data
+          .map((item) => ScanRecord.fromJson(item as Map<String, dynamic>))
+          .toList();
+      scansState.setAll(records);
+      await saveScans();
+    } catch (_) {}
   }
 
   void _onStateChanged() {
@@ -139,7 +134,17 @@ class _HomePageContentState extends State<HomePageContent> {
               const Spacer(),
               GestureDetector(
                 onTap: widget.onProfileTap,
-                child: const CircleAvatar(radius: 16),
+                child: CircleAvatar(
+                  radius: 16,
+                  backgroundImage: userState.profileImagePath != null
+                      ? FileImage(File(userState.profileImagePath!))
+                            as ImageProvider
+                      : AssetImage(
+                          userState.gender.toLowerCase() == 'female'
+                              ? 'assets/bigProfilePic.png'
+                              : 'assets/male.png',
+                        ),
+                ),
               ),
             ],
           ),
@@ -181,7 +186,15 @@ class _HomePageContentState extends State<HomePageContent> {
             const Text("No scans yet")
           else
             ...latestTwo.map((scan) => ListTile(
-              leading: Image.file(File(scan.imagePath), width: 40),
+              leading: (scan.imageUrl != null && scan.imageUrl!.isNotEmpty)
+                  ? Image.network(scan.imageUrl!, width: 40, height: 40,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          const Icon(Icons.image_not_supported, size: 40))
+                  : (scan.imagePath.isNotEmpty
+                      ? Image.file(File(scan.imagePath), width: 40,
+                          height: 40, fit: BoxFit.cover)
+                      : const Icon(Icons.image_not_supported, size: 40)),
               title: Text(scan.plantName),
               subtitle: Text(scan.status),
               onTap: () {

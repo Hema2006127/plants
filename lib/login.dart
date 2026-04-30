@@ -85,9 +85,13 @@ class _LoginState extends State<Login> {
         );
 
         fullName = profileRes.data['data']['name'] as String? ?? '';
+        final genderFromApi =
+            profileRes.data['data']['gender'] as String? ?? '';
 
         final prefs = await SharedPreferences.getInstance();
-        gender = prefs.getString('gender') ?? 'male';
+        gender = genderFromApi.isNotEmpty
+            ? genderFromApi.toLowerCase()
+            : (prefs.getString('savedGender') ?? 'male');
       } catch (_) {
         fullName = '';
       }
@@ -99,11 +103,6 @@ class _LoginState extends State<Login> {
         fullName: fullName,
         gender: gender,
       );
-
-      // Mark logged in
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
-      await prefs.setString('gender', gender);
 
       await loadScansFromApi(token);
 

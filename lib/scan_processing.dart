@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -21,17 +20,10 @@ class _ScanProcessingState extends State<ScanProcessing>
   double _progress = 0.0;
   bool _scanComplete = false;
   late AnimationController _lineController;
-  late Animation<double> _lineAnimation;
   Timer? _progressTimer;
 
   bool _resultSaved = false;
   String? _savedStatus;
-
-  late Future<bool> _imageExistsFuture;
-  late double _imgW;
-  late double _imgH;
-
-  static const double _borderOffset = 22;
 
   String? _apiStatus;
   String? _apiConfidence;
@@ -44,7 +36,6 @@ class _ScanProcessingState extends State<ScanProcessing>
   @override
   void initState() {
     super.initState();
-    _imageExistsFuture = File(widget.imagePath).exists();
     _startAnimation();
     _callScanApi();
   }
@@ -54,10 +45,6 @@ class _ScanProcessingState extends State<ScanProcessing>
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
-
-    _lineAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _lineController, curve: Curves.easeInOut),
-    );
 
     _progressTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
       if (!mounted) return;

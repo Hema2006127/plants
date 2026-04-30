@@ -63,7 +63,7 @@ class _ResultPageState extends State<ResultPage> {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
         _handleBack();
       },
@@ -89,6 +89,254 @@ class _ResultPageState extends State<ResultPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildAppBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: _handleBack,
+            child: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 24,
+              color: Color(0xFF4A4A4A),
+            ),
+          ),
+          const Expanded(
+            child: Center(
+              child: Text(
+                'Scan Result',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  color: Color(0xFF1F1F1F),
+                  fontFamily: 'Poppins',
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImage(Size size) {
+    Widget imageWidget;
+    if (widget.imageUrl != null && widget.imageUrl!.isNotEmpty) {
+      imageWidget = Image.network(
+        widget.imageUrl!,
+        width: double.infinity,
+        height: size.height * 0.32,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _imagePlaceholder(size),
+      );
+    } else if (widget.imagePath.isNotEmpty) {
+      imageWidget = FutureBuilder<bool>(
+        future: _imageExistsFuture,
+        builder: (context, snap) {
+          if (snap.data == true) {
+            return Image.file(
+              File(widget.imagePath),
+              width: double.infinity,
+              height: size.height * 0.32,
+              fit: BoxFit.cover,
+            );
+          }
+          return _imagePlaceholder(size);
+        },
+      );
+    } else {
+      imageWidget = _imagePlaceholder(size);
+    }
+
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        bottomLeft: Radius.circular(16),
+        bottomRight: Radius.circular(16),
+      ),
+      child: imageWidget,
+    );
+  }
+
+  Widget _imagePlaceholder(Size size) {
+    return Container(
+      width: double.infinity,
+      height: size.height * 0.32,
+      color: const Color(0xFFEBF5E9),
+      child: const Icon(Icons.eco, size: 80, color: Color(0xFF399B25)),
+    );
+  }
+
+  Widget _buildNameAndBadge() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            widget.plantName,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1F1F1F),
+              fontFamily: 'Poppins',
+            ),
+          ),
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: isHealthy
+                  ? const Color(0xFFEBF5E9)
+                  : const Color(0xFFFFEBEB),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  isHealthy
+                      ? Icons.check_circle
+                      : Icons.warning_rounded,
+                  size: 14,
+                  color: isHealthy
+                      ? const Color(0xFF399B25)
+                      : const Color(0xFFD32F2F),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  widget.status,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: isHealthy
+                        ? const Color(0xFF399B25)
+                        : const Color(0xFFD32F2F),
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageCard() {
+    final message = isHealthy
+        ? 'Your plant looks healthy! Keep up the good care and continue monitoring regularly.'
+        : 'Your plant shows signs of disease. Consider consulting an expert or adjusting care routines.';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isHealthy
+              ? const Color(0xFFEBF5E9)
+              : const Color(0xFFFFEBEB),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isHealthy
+                ? const Color(0xFFA4D19B)
+                : const Color(0xFFFFADAD),
+            width: 0.6,
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              isHealthy ? Icons.eco : Icons.healing,
+              color: isHealthy
+                  ? const Color(0xFF399B25)
+                  : const Color(0xFFD32F2F),
+              size: 22,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  fontSize: 13,
+                  height: 1.5,
+                  fontFamily: 'Poppins',
+                  color: Color(0xFF1F1F1F),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCareTips() {
+    final tips = isHealthy
+        ? [
+            'Water regularly and avoid overwatering',
+            'Ensure adequate sunlight exposure',
+            'Use well-draining soil',
+            'Apply balanced fertilizer monthly',
+          ]
+        : [
+            'Remove infected leaves immediately',
+            'Improve air circulation around the plant',
+            'Avoid wetting leaves when watering',
+            'Consider using appropriate fungicide or pesticide',
+          ];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Care Tips',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1F1F1F),
+              fontFamily: 'Poppins',
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...tips.map(
+            (tip) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(top: 6),
+                    child: Icon(
+                      Icons.circle,
+                      size: 6,
+                      color: Color(0xFF399B25),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      tip,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        height: 1.4,
+                        fontFamily: 'Poppins',
+                        color: Color(0xFF4A4A4A),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -123,7 +371,7 @@ class _ResultPageState extends State<ResultPage> {
                         ),
                       ),
                       Text(
-                        '${safeConfidence}',
+                        '$safeConfidence%',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,

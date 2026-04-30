@@ -7,6 +7,103 @@ import 'change_password_sheet.dart';
 import 'logout_sheet.dart';
 import 'package:dio/dio.dart';
 import 'user_state.dart';
+import 'recent_scan.dart';
+
+Future<bool?> showSavePhotoDialog(BuildContext ctx, String imagePath) {
+  return showDialog<bool>(
+    context: ctx,
+    builder: (dialogCtx) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: const Text(
+        'Save Profile Photo?',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'Poppins',
+          color: Color(0xFF1F1F1F),
+        ),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ClipOval(
+            child: Image.file(
+              File(imagePath),
+              width: 100,
+              height: 100,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Use this photo as your profile picture?',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              fontFamily: 'Poppins',
+              color: Color(0xFF676767),
+            ),
+          ),
+        ],
+      ),
+      actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      actions: [
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(dialogCtx, false),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF399B25)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(
+                      color: Color(0xFF399B25), fontFamily: 'Poppins'),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(dialogCtx, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF399B25),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text(
+                  'Save',
+                  style:
+                      TextStyle(color: Colors.white, fontFamily: 'Poppins'),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+Future<void> uploadProfileImage(String localPath) async {
+  if (userState.token.isEmpty) return;
+  try {
+    final dio = Dio();
+    final formData = FormData.fromMap({
+      'image': await MultipartFile.fromFile(localPath, filename: 'profile.jpg'),
+    });
+    await dio.put(
+      'https://plant-pules-api.vercel.app/api/v1/users/profile',
+      data: formData,
+      options: Options(headers: {'token': userState.token}),
+    );
+  } catch (_) {}
+}
 
 class Profile extends StatefulWidget {
   final String fullName;
@@ -58,12 +155,18 @@ class _ProfileState extends State<Profile> {
     final picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
+
+    if (!mounted) return;
+    final confirmed = await showSavePhotoDialog(context, image.path);
+    if (confirmed != true || !mounted) return;
+
     final bytes = await image.readAsBytes();
     final tempDir = await getApplicationDocumentsDirectory();
     final newPath =
         '${tempDir.path}/profile_${DateTime.now().millisecondsSinceEpoch}.jpg';
     await File(newPath).writeAsBytes(bytes);
     userState.updateProfileImage(newPath);
+    await uploadProfileImage(newPath);
   }
 
   void _showEditProfileSheet() {
@@ -287,8 +390,92 @@ class _ProfileState extends State<Profile> {
 }
 
 
-class _AccountSettingsSheet extends StatelessWidget {
+class _AccountSettingsSheet extends StatefulWidget {
   const _AccountSettingsSheet();
+
+  @override
+  State<_AccountSettingsSheet> createState() => _AccountSettingsSheetState();
+}
+
+class _AccountSettingsSheetState extends State<_AccountSettingsSheet> {
+  bool _deletingAccount = false;
+
+  Future<void> _handleDeleteAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Delete Account',
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontFamily: 'Poppins',
+            color: Color(0xFFD32F2F),
+          ),
+        ),
+        content: const Text(
+          'Are you sure you want to delete your account? This action cannot be undone.',
+          style: TextStyle(fontFamily: 'Poppins', fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Color(0xFF399B25), fontFamily: 'Poppins'),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Color(0xFFD32F2F), fontFamily: 'Poppins'),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _deletingAccount = true);
+
+    try {
+      final dio = Dio();
+      await dio.delete(
+        'https://plant-pules-api.vercel.app/api/v1/users/profile',
+        options: Options(headers: {'token': userState.token}),
+      );
+
+      await userState.clearAll();
+      scansState.clear();
+      await saveScans();
+
+      if (!mounted) return;
+      Navigator.of(context).pushNamedAndRemoveUntil('Login', (r) => false);
+
+      Fluttertoast.showToast(
+        msg: 'Account deleted successfully',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        backgroundColor: const Color(0xFFD32F2F),
+        textColor: Colors.white,
+        fontSize: 14,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _deletingAccount = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Failed to delete account. Please try again.',
+            style: TextStyle(fontFamily: 'Poppins'),
+          ),
+          backgroundColor: Color(0xFFD32F2F),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -355,6 +542,52 @@ class _AccountSettingsSheet extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: _deletingAccount ? null : _handleDeleteAccount,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFEBEB),
+                border:
+                    Border.all(color: const Color(0xFFFFADAD), width: 0.4),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.delete_outline,
+                      color: Color(0xFFD32F2F), size: 24),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Delete Account',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Poppins',
+                        color: Color(0xFFD32F2F),
+                      ),
+                    ),
+                  ),
+                  if (_deletingAccount)
+                    const SizedBox(
+                      width: 19,
+                      height: 19,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFFD32F2F),
+                      ),
+                    )
+                  else
+                    const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 19,
+                      color: Color(0xFFD32F2F),
+                    ),
+                ],
+              ),
+            ),
+          ),
           const SizedBox(height: 24),
         ],
       ),
@@ -379,10 +612,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
   late TextEditingController _emailController;
   String _selectedGender = userState.gender;
 
-  static final _emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.\w{2,}$');
-
   bool _nameError = false;
-  bool _emailError = false;
 
   @override
   void initState() {
@@ -403,12 +633,18 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
     final picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
+
+    if (!mounted) return;
+    final confirmed = await showSavePhotoDialog(context, image.path);
+    if (confirmed != true || !mounted) return;
+
     final bytes = await image.readAsBytes();
     final tempDir = await getApplicationDocumentsDirectory();
     final newPath =
         '${tempDir.path}/profile_${DateTime.now().millisecondsSinceEpoch}.jpg';
     await File(newPath).writeAsBytes(bytes);
     userState.updateProfileImage(newPath);
+    await uploadProfileImage(newPath);
     if (mounted) setState(() {});
   }
 
@@ -429,7 +665,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
       final dio = Dio();
       await dio.put(
         'https://plant-pules-api.vercel.app/api/v1/users/profile',
-        data: {'name': newName},
+        data: {'name': newName, 'gender': _selectedGender},
         options: Options(headers: {'token': userState.token}),
       );
 
@@ -539,10 +775,10 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
                 label: 'Email',
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                hasError: _emailError,
+                hasError: false,
                 enabled: false,
-                errorText: 'Enter a valid email',
-                onClearError: () => setState(() => _emailError = false),
+                errorText: '',
+                onClearError: () {},
               ),
               const SizedBox(height: 24),
 
@@ -659,9 +895,11 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
               color: Color(0xFF676767),
               fontFamily: 'Poppins',
             ),
-            suffixIcon: const Icon(
-              Icons.edit_outlined,
-              color: Color(0xFF399B25),
+            suffixIcon: Icon(
+              enabled ? Icons.edit_outlined : Icons.lock_outline,
+              color: enabled
+                  ? const Color(0xFF399B25)
+                  : const Color(0xFF9E9E9E),
               size: 20,
             ),
             enabledBorder: OutlineInputBorder(

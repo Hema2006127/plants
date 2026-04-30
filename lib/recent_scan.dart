@@ -21,6 +21,34 @@ class ScanRecord {
     required this.status,
     required this.scanTime,
   });
+
+  factory ScanRecord.fromJson(Map<String, dynamic> json) {
+    final images = json['imageUrl'] as List?;
+    final imageUrl =
+        (images != null && images.isNotEmpty) ? images.first as String : null;
+
+    final decision = (json['finalDecision'] ?? '').toString().toLowerCase();
+    final rawConf = json['averageConfidence'] ?? json['confidence'] ?? 0;
+    final confidence = (rawConf is num)
+        ? rawConf.toStringAsFixed(0)
+        : rawConf.toString();
+
+    DateTime scanTime;
+    try {
+      scanTime = DateTime.parse(json['createdAt'] as String);
+    } catch (_) {
+      scanTime = DateTime.now();
+    }
+
+    return ScanRecord(
+      imagePath: '',
+      imageUrl: imageUrl,
+      plantName: 'Lettuce',
+      status: decision == 'healthy' ? 'Healthy' : 'Diseased',
+      confidence: confidence,
+      scanTime: scanTime,
+    );
+  }
 }
 
 class ScansState extends ChangeNotifier {
@@ -114,11 +142,6 @@ class _RecentScanState extends State<RecentScan> {
     });
   }
 
-  void _clear() {
-    scansState.clear();
-    saveScans();
-  }
-
   @override
   Widget build(BuildContext context) {
     final scans = scansState.scans;
@@ -207,22 +230,9 @@ Future<void> loadScansFromApi(String token) async {
 
     final List data = response.data['data'] ?? [];
 
-    final apiScans = data.map((s) {
-      final images = s['imageUrl'] as List?;
-      final imageUrl =
-      (images != null && images.isNotEmpty) ? images.first : '';
-
-      final decision = (s['finalDecision'] ?? '').toString().toLowerCase();
-
-      return ScanRecord(
-        imagePath: '',
-        imageUrl: imageUrl,
-        plantName: 'Lettuce',
-        status: decision == 'healthy' ? 'Healthy' : 'Diseased',
-        confidence: (s['confidence'] ?? '0.0').toString(),
-        scanTime: DateTime.parse(s['createdAt']),
-      );
-    }).toList();
+    final apiScans = data
+        .map((s) => ScanRecord.fromJson(s as Map<String, dynamic>))
+        .toList();
 
     scansState.setAll(apiScans);
     await saveScans();

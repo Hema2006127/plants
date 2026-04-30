@@ -107,6 +107,7 @@ class _RegisterFormState extends State<_RegisterForm> {
           'email': email,
           'password': password,
           'confirmPassword': password,
+          'gender': _gender!,
         },
         options: Options(
           receiveTimeout: const Duration(seconds: 15),
@@ -223,7 +224,7 @@ class _RegisterFormState extends State<_RegisterForm> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
                         color: _gender == 'male'
-                            ? const Color(0xFF399B25).withOpacity(0.1)
+                            ? const Color(0xFF399B25).withValues(alpha: 0.1)
                             : Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
@@ -260,7 +261,7 @@ class _RegisterFormState extends State<_RegisterForm> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
                         color: _gender == 'female'
-                            ? const Color(0xFF399B25).withOpacity(0.1)
+                            ? const Color(0xFF399B25).withValues(alpha: 0.1)
                             : Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(

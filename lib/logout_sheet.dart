@@ -9,6 +9,7 @@ class LogoutSheet extends StatelessWidget {
   Future<void> _handleLogout(BuildContext context) async {
     await userState.clearAll();
     scansState.clear();
+    await saveScans();
 
     Fluttertoast.showToast(
       msg: 'Logged out successfully',

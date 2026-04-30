@@ -24,17 +24,17 @@ class UserState extends ChangeNotifier {
 
   Future<SharedPreferences> _getPrefs() => SharedPreferences.getInstance();
 
-  void saveUserData({
+  Future<void> saveUserData({
     required String email,
     required String password,
     String fullName = '',
     String gender = '',
-  }) {
+  }) async {
     _email = email;
     _password = password;
     _fullName = fullName;
     _gender = gender;
-    _persistLoginState(email, fullName, password, gender);
+    await _persistLoginState(email, fullName, password, gender);
     notifyListeners();
   }
 
@@ -131,6 +131,7 @@ class UserState extends ChangeNotifier {
     await prefs.remove('savedEmail');
     await prefs.remove('savedFullName');
     await prefs.remove('savedPassword');
+    await prefs.remove('savedGender');
     await prefs.remove('savedImagePath');
   }
 }
