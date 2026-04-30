@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'user_state.dart';
-import 'recent_scan.dart';
+import '../state/user_state.dart';
+import '../screens/recent_scan.dart';
 
 class LogoutSheet extends StatelessWidget {
   const LogoutSheet({super.key});

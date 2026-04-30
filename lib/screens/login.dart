@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'up_green_plant_pulse.dart';
-import 'text_field.dart';
-import 'green_button.dart';
-import 'down_text.dart';
-import 'log_with_facebook.dart';
-import 'user_state.dart';
+import '../widgets/up_green_plant_pulse.dart';
+import '../widgets/text_field.dart';
+import '../widgets/green_button.dart';
+import '../widgets/down_text.dart';
+import '../widgets/log_with_facebook.dart';
+import '../state/user_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'recent_scan.dart';
 

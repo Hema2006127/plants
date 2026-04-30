@@ -5,7 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'reset_password_sheet.dart';
 import 'green_button.dart';
 import 'package:dio/dio.dart';
-import 'user_state.dart';
+import '../state/user_state.dart';
 
 class OtpSheet extends StatefulWidget {
   final String email;

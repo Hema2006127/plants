@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'green_button.dart';
-import 'down_text.dart';
+import '../widgets/green_button.dart';
+import '../widgets/down_text.dart';
 
 class OTPHelper extends StatefulWidget {
   final String title;

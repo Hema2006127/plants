@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'user_state.dart';
+import '../state/user_state.dart';
 import 'recent_scan.dart';
 import 'resultpage.dart';
 

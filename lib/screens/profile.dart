@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'change_password_sheet.dart';
-import 'logout_sheet.dart';
+import '../widgets/change_password_sheet.dart';
+import '../widgets/logout_sheet.dart';
 import 'package:dio/dio.dart';
-import 'user_state.dart';
+import '../state/user_state.dart';
 import 'recent_scan.dart';
 
 Future<bool?> showSavePhotoDialog(BuildContext ctx, String imagePath) {
