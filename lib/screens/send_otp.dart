@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'otp_sheet.dart';
+import '../widgets/otp_sheet.dart';
 
 class SendOTP extends StatelessWidget {
   const SendOTP({super.key});

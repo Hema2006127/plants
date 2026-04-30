@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'recent_scan.dart';
-import 'user_state.dart';
+import '../screens/recent_scan.dart';
+import '../state/user_state.dart';
 
 class LoginWithFaceBook extends StatefulWidget {
   final void Function(String email)? onEmailSelected;

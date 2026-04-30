@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'otp_helper_file.dart';
+import '../state/otp_helper_file.dart';
 
 class ForgotPassword extends StatefulWidget {
   const ForgotPassword({super.key});

@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mv login.dart screens/)",
+      "Bash(mv register.dart screens/)",
+      "Bash(mv onboarding.dart screens/)",
+      "Bash(mv home_page.dart screens/)",
+      "Bash(mv home_page_content.dart screens/)",
+      "Bash(mv text_field.dart widgets/)",
+      "Bash(mv green_button.dart widgets/)",
+      "Bash(mv down_text.dart widgets/)",
+      "Bash(mv up_green_plant_pulse.dart widgets/)",
+      "Bash(mv log_with_facebook.dart widgets/)",
+      "Bash(mv user_state.dart state/)",
+      "Bash(mv otp_helper_file.dart state/)",
+      "Bash(flutter pub *)"
+    ]
+  }
+}

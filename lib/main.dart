@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'change_password.dart';
-import 'forget_password.dart';
-import 'home_page.dart';
-import 'login.dart';
-import 'onboarding.dart';
-import 'recent_scan.dart';
-import 'register.dart';
-import 'resultpage.dart';
-import 'scan.dart';
-import 'send_otp.dart';
-import 'user_state.dart';
+import 'screens/change_password.dart';
+import 'screens/forget_password.dart';
+import 'screens/home_page.dart';
+import 'screens/login.dart';
+import 'screens/onboarding.dart';
+import 'screens/recent_scan.dart';
+import 'screens/register.dart';
+import 'screens/resultpage.dart';
+import 'screens/scan.dart';
+import 'screens/send_otp.dart';
+import 'state/user_state.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

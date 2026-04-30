@@ -34,6 +34,9 @@ class UserState extends ChangeNotifier {
     _password = password;
     _fullName = fullName;
     _gender = gender;
+    final prefs = await _getPrefs();
+    _profileImagePath =
+        prefs.getString('savedImagePath_$email') ?? _profileImagePath;
     await _persistLoginState(email, fullName, password, gender);
     notifyListeners();
   }
@@ -93,6 +96,9 @@ class UserState extends ChangeNotifier {
   Future<void> _persistImagePath(String path) async {
     final prefs = await _getPrefs();
     await prefs.setString('savedImagePath', path);
+    if (_email.isNotEmpty) {
+      await prefs.setString('savedImagePath_$_email', path);
+    }
   }
 
   Future<void> loadPersistedData() async {
@@ -102,7 +108,10 @@ class UserState extends ChangeNotifier {
     _email = prefs.getString('savedEmail') ?? '';
     _password = prefs.getString('savedPassword') ?? '';
     _gender = prefs.getString('savedGender') ?? 'male';
-    _profileImagePath = prefs.getString('savedImagePath');
+    _profileImagePath = _email.isNotEmpty
+        ? (prefs.getString('savedImagePath_$_email') ??
+            prefs.getString('savedImagePath'))
+        : prefs.getString('savedImagePath');
   }
 
   Future<void> clearAll() async {
@@ -132,7 +141,7 @@ class UserState extends ChangeNotifier {
     await prefs.remove('savedFullName');
     await prefs.remove('savedPassword');
     await prefs.remove('savedGender');
-    await prefs.remove('savedImagePath');
+    await prefs.remove('savedImagePath'); // generic key only — per-email key kept
   }
 }
 

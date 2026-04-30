@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'otp_sheet.dart';
-import 'user_state.dart';
+import '../state/user_state.dart';
 
 class ForgotPasswordSheet extends StatefulWidget {
   const ForgotPasswordSheet({super.key});

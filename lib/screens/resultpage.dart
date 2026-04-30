@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'user_state.dart';
+import '../state/user_state.dart';
 
 class ResultPage extends StatefulWidget {
   final String imagePath;

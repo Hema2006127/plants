@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'green_button.dart';
+import '../widgets/green_button.dart';
 import 'recent_scan.dart';
 import 'resultpage.dart';
-import 'user_state.dart';
+import '../state/user_state.dart';
 
 class ScanProcessing extends StatefulWidget {
   final String imagePath;
