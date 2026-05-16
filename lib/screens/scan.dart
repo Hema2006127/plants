@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'scan_processing.dart';
 
 class Scan extends StatefulWidget {
@@ -19,16 +17,10 @@ class _ScanState extends State<Scan> {
       final XFile? image = await _picker.pickImage(source: source);
       if (image == null || !mounted) return;
 
-      final tempDir = await getTemporaryDirectory();
-      final String newPath =
-          '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-      await File(image.path).copy(newPath);
-
-      if (!mounted) return;
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ScanProcessing(imagePath: newPath),
+          builder: (context) => ScanProcessing(imagePath: image.path),
         ),
       );
     } catch (e) {

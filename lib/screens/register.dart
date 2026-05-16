@@ -86,17 +86,17 @@ class _RegisterFormState extends State<_RegisterForm> {
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
 
+    if (_gender == null) {
+      _showError('Please select your gender');
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     final fullName = _nameController.text.trim();
     final firstName = fullName.split(' ')[0];
     final email = _emailController.text.trim();
     final password = _passwordController.text;
-
-    if (_gender == null) {
-      _showError('Please select gender');
-      return;
-    }
 
     try {
       final dio = Dio();
@@ -141,7 +141,16 @@ class _RegisterFormState extends State<_RegisterForm> {
         },
       );
     } on DioException catch (e) {
-      final msg = e.response?.data?['message'] ?? 'Registration failed';
+      String msg = 'Registration failed. Please try again.';
+      if (e.response?.data != null) {
+        final raw = e.response!.data;
+        if (raw is Map) {
+          msg = (raw['message'] ?? raw['error'] ?? msg).toString();
+        }
+      } else if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        msg = 'Connection timed out. Check your internet and try again.';
+      }
       _showError(msg);
     } catch (_) {
       _showError('Something went wrong. Please try again.');

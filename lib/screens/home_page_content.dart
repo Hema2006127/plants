@@ -22,11 +22,6 @@ class HomePageContent extends StatefulWidget {
 }
 
 class _HomePageContentState extends State<HomePageContent> {
-  int _totalScans = 0;
-  int _healthyScans = 0;
-  int _diseasedScans = 0;
-  bool _statsLoaded = false;
-
   static const _green = Color(0xFF4CAF50);
   static const _lightGreen = Color(0xFFEEF7EE);
   static const _lightOrange = Color(0xFFFFF3E6);
@@ -44,28 +39,7 @@ class _HomePageContentState extends State<HomePageContent> {
     super.initState();
     userState.addListener(_onStateChanged);
     scansState.addListener(_onStateChanged);
-    _loadStats();
     _syncScansWithApi();
-  }
-
-  Future<void> _loadStats() async {
-    try {
-      final dio = Dio();
-      final response = await dio.get(
-        'https://plant-pules-api.vercel.app/api/v1/scan/stats',
-        options: Options(headers: {'token': userState.token}),
-      );
-      final data = response.data['data'];
-      if (!mounted) return;
-      setState(() {
-        _totalScans = (data?['totalScans'] ?? 0);
-        _healthyScans = (data?['healthyScans'] ?? 0);
-        _diseasedScans = (data?['diseasedScans'] ?? 0);
-        _statsLoaded = true;
-      });
-    } catch (e) {
-      setState(() => _statsLoaded = true);
-    }
   }
 
   Future<void> _syncScansWithApi() async {
@@ -106,13 +80,9 @@ class _HomePageContentState extends State<HomePageContent> {
     final scans = scansState.scans;
     final latestTwo = scans.reversed.take(2).toList();
 
-    final totalStr = _statsLoaded ? _totalScans.toString() : '${scans.length}';
-    final healthyStr = _statsLoaded
-        ? _healthyScans.toString()
-        : '${scans.where((s) => s.status == 'Healthy').length}';
-    final diseasedStr = _statsLoaded
-        ? _diseasedScans.toString()
-        : '${scans.where((s) => s.status == 'Diseased').length}';
+    final totalStr = '${scans.length}';
+    final healthyStr = '${scans.where((s) => s.status == 'Healthy').length}';
+    final diseasedStr = '${scans.where((s) => s.status == 'Diseased').length}';
 
     final tipIndex = (scans.length) % _tips.length;
 

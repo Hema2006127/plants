@@ -57,23 +57,41 @@ class _LoginWithFaceBookState extends State<LoginWithFaceBook> {
         token = res.data['token'] as String? ?? '';
       } on DioException catch (e) {
         final status = e.response?.statusCode ?? 0;
-        // لو الـ account مش موجود → اعمل register
-        if (status == 401 || status == 404 || status == 400) {
-          final res = await dio.post(
-            _signupUrl,
-            data: {
-              'name': name,
-              'email': email,
-              'password': password,
-              'confirmPassword': password,
-              'gender': 'male',
-            },
-            options: Options(
-              receiveTimeout: const Duration(seconds: 15),
-              sendTimeout: const Duration(seconds: 15),
-            ),
-          );
-          token = res.data['token'] as String? ?? '';
+        // أي 4xx يعني الأكونت مش موجود أو بيانات غلط → اعمل register
+        if (status >= 400 && status < 500) {
+          try {
+            final res = await dio.post(
+              _signupUrl,
+              data: {
+                'name': name,
+                'email': email,
+                'password': password,
+                'confirmPassword': password,
+                'gender': 'male',
+              },
+              options: Options(
+                receiveTimeout: const Duration(seconds: 15),
+                sendTimeout: const Duration(seconds: 15),
+              ),
+            );
+            token = res.data['token'] as String? ?? '';
+          } on DioException catch (signupErr) {
+            // لو signup فشل بسبب إن الإيميل موجود بالفعل → جرب signin تاني
+            final signupStatus = signupErr.response?.statusCode ?? 0;
+            if (signupStatus >= 400 && signupStatus < 500) {
+              final res = await dio.post(
+                _signinUrl,
+                data: {'email': email, 'password': password},
+                options: Options(
+                  receiveTimeout: const Duration(seconds: 15),
+                  sendTimeout: const Duration(seconds: 15),
+                ),
+              );
+              token = res.data['token'] as String? ?? '';
+            } else {
+              rethrow;
+            }
+          }
         } else {
           rethrow;
         }

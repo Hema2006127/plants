@@ -37,10 +37,10 @@ class MyApp extends StatelessWidget {
         'ScanPage': (_) => const Scan(),
         'RecentScan': (_) => const RecentScan(),
 
-        // ✅ HomePage بعد التعديل (بياخد parameters)
         'HomePage': (context) {
-          final args = ModalRoute.of(context)!.settings.arguments
-          as Map<String, dynamic>?;
+          final args =
+              ModalRoute.of(context)!.settings.arguments
+                  as Map<String, dynamic>?;
 
           return HomePage(
             firstName: args?['firstName'] ?? '',
@@ -49,10 +49,10 @@ class MyApp extends StatelessWidget {
           );
         },
 
-        // ✅ ResultPage بعد التعديل (بياخد accuracy الحقيقي)
         'ResultPage': (context) {
-          final args = ModalRoute.of(context)!.settings.arguments
-          as Map<String, dynamic>?;
+          final args =
+              ModalRoute.of(context)!.settings.arguments
+                  as Map<String, dynamic>?;
 
           return ResultPage(
             imagePath: args?['imagePath'] ?? '',

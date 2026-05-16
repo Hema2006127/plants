@@ -442,10 +442,27 @@ class _AccountSettingsSheetState extends State<_AccountSettingsSheet> {
 
     try {
       final dio = Dio();
-      await dio.delete(
+
+      // try primary endpoint first, fallback to /users
+      DioException? lastErr;
+      for (final url in [
         'https://plant-pules-api.vercel.app/api/v1/users/profile',
-        options: Options(headers: {'token': userState.token}),
-      );
+        'https://plant-pules-api.vercel.app/api/v1/users',
+      ]) {
+        try {
+          await dio.delete(
+            url,
+            options: Options(headers: {'token': userState.token}),
+          );
+          lastErr = null;
+          break;
+        } on DioException catch (e) {
+          lastErr = e;
+          if (e.response?.statusCode == 404) continue;
+          rethrow;
+        }
+      }
+      if (lastErr != null) throw lastErr;
 
       await userState.clearAll();
       scansState.clear();
@@ -462,16 +479,20 @@ class _AccountSettingsSheetState extends State<_AccountSettingsSheet> {
         textColor: Colors.white,
         fontSize: 14,
       );
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       setState(() => _deletingAccount = false);
+
+      String errMsg = 'Failed to delete account. Please try again.';
+      if (e is DioException && e.response != null) {
+        final msg = e.response?.data?['message'];
+        if (msg != null && msg.toString().isNotEmpty) errMsg = msg.toString();
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Failed to delete account. Please try again.',
-            style: TextStyle(fontFamily: 'Poppins'),
-          ),
-          backgroundColor: Color(0xFFD32F2F),
+        SnackBar(
+          content: Text(errMsg, style: const TextStyle(fontFamily: 'Poppins')),
+          backgroundColor: const Color(0xFFD32F2F),
         ),
       );
     }
